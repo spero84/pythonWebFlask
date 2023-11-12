@@ -8,14 +8,6 @@ from homework.extensions import db
 blueprint = Blueprint('items', __name__,  url_prefix='/items')
 ns = Namespace('items', description='Items operations')
 
-@ns.route('/')
-class Welcome(Resource):
-    # @ns.marshal_list_with(item_model)
-    def get(self):
-        # 데이터 반환 로직
-        return [{'id': 1, 'name': 'Item 1', 'created': '2023-11-12 19:24:47.498808', 'content': 'contentss'},
-                {'id': 2, 'name': 'Item 2', 'created': '2023-11-12 19:24:47.498808', 'content': 'contentss'},]
-
 
 @ns.route('/create')
 class CreateAPI(Resource):
@@ -33,7 +25,7 @@ class CreateAPI(Resource):
 class ReadAPI(Resource):
     @ns.marshal_with(read_model)
     def get(self, id):
-        return Item.query.filter_by(id).first()
+        return Item.query.get(id)
 
 @ns.route('/update')
 class UpdateAPI(Resource):
@@ -54,6 +46,6 @@ class UpdateAPI(Resource):
     @ns.marshal_with(delete_model)
     def delete(self, id):
         item = Item.query.get(id)
-        db.session.delete()
+        db.session.delete(item)
         db.session.commit()
         return {}, 204
