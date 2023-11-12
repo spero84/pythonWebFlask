@@ -9,9 +9,9 @@ from homework.tasks.tasks import create_item_task
 bp = Blueprint('main', __name__, url_prefix='/')
 
 
-@bp.route('/')
-def default_page():
-    return 'Hello World!'
+# @bp.route('/')
+# def default_page():
+#     return 'Hello World!'
 
 # @bp.route('/create', methods=['POST'])
 # def create_item():
@@ -79,7 +79,7 @@ def delete_item():
     db.session.delete(item)
     try:
         db.session.commit()
-        return jsonify(), 201
+        return jsonify(), 204
     except Exception as e:
         db.session.rollback()
         return jsonify({'error': str(e)}), 500

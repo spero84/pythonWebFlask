@@ -2,7 +2,7 @@ import pytest
 from homework.models.models import Item
 from homework import db
 from datetime import datetime
-
+import logging
 
 def test_home_page(client):
     response = client.get('/')
@@ -35,9 +35,9 @@ def test_update_item(init_database):
 def test_delete_item(init_database):
     """Test item deletion."""
     item = Item.query.first()
-    print(item)
+    logging.debug(item)
     db.session.delete(item)
     db.session.commit()
     deleted_item = Item.query.first()
-    print(deleted_item)
+    logging.debug(deleted_item)
     assert deleted_item is not item

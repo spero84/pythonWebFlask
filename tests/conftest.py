@@ -2,7 +2,6 @@ import pytest
 from homework import create_app, db
 from homework.models.models import Item
 from datetime import datetime
-from app import app as flask_app
 
 @pytest.fixture(scope='module')
 def app():
@@ -29,9 +28,8 @@ def init_database(app):
         db.session.add(Item(name='Test 2', content='content22222222222', created=datetime.now()))
         db.session.commit()
 
-    yield db  # 이 위치에서 테스트가 실행됩니다.
+    yield db  # 테스트
 
-    # 테스트 후 데이터베이스 정리
     with app.app_context():
         db.session.remove()
         db.drop_all()

@@ -7,8 +7,6 @@ BASE_DIR = os.path.dirname(os.path.dirname(__file__))
 # define baseconfig
 class Config:
     DEBUG = True
-    SWAGGER_URL = '/swagger'
-    SWAGGER_API_URL = '/static/swagger.json'
     # redis
     CACHE_TYPE = 'redis'
     CACHE_REDIS_URL = 'redis://localhost:6379'
