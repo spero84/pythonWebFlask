@@ -1,0 +1,33 @@
+version: '3.8'
+services:
+  redis:
+    image: redis
+    container_name: redis
+    ports:
+      - 6379:6379
+
+  web:
+    build: .
+    container_name: homework
+    environment:
+      - FLASK_APP=homework
+      - FLASK_DEBUG=1
+    volumes:
+      - .:/app
+    command: flask run -h 0.0.0.0
+    ports:
+      - 5005:5000
+    depends_on:
+      - redis
+
+  celery:
+    build: .
+    environment:
+      - FLASK_APP=homework
+    volumes:
+      - .:/app
+    command: celery -A homework.tasks.celery worker --loglevel=info
+    depends_on:
+      - redis
+      - web
+
