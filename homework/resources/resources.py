@@ -42,10 +42,9 @@ class UpdateAPI(Resource):
 
 @ns.route('/delete/<int:id>')
 class UpdateAPI(Resource):
-    @ns.expect(delete_model)
     @ns.marshal_with(delete_model)
     def delete(self, id):
         item = Item.query.get(id)
         db.session.delete(item)
         db.session.commit()
-        return {"id": item.id}, 204
+        return {"id": id}, 204

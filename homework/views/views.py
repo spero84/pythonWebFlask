@@ -89,16 +89,21 @@ def read_item(id):
 #     return item.serialize()
 
 
-@bp.route('/update/<int:id>', methods=['PUT'])
-def update_item(id):
-    item = Item.query.get_or_404(id)
-    item.name = request.form['name']
+@bp.route('/update/', methods=['PUT'])
+def update_item():
+    id = request.form['id']
+    name = request.form['name']
     file = request.files['content']
-    item.content = file.read() if file else None
+    content = file.read() if file else None
+    current_app.logger.debug(content)
+    item = Item.query.get_or_404(id)
+    item.id = id
+    item.name = name
+    item.content = content
     try:
         db.session.commit()
-        string_data = item.content.decode('utf-8')
-        return jsonify({"message": "Data created", "id": item.id, "content": string_data,
+        string_data = content.decode('utf-8')
+        return jsonify({"message": "Data updated", "name": item.name, "id": item.id, "content": string_data,
                         "created": item.created}), 201
     except Exception as e:
         db.session.rollback()
