@@ -26,7 +26,7 @@ services:
       - FLASK_APP=homework
     volumes:
       - .:/app
-    command: celery -A homework.tasks.celery worker --loglevel=info
+    command: celery -A homework.tasks.tasks.celery worker --loglevel=info
     depends_on:
       - redis
       - web

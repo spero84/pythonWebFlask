@@ -1,25 +1,22 @@
-from homework.models import Item
+from flask import current_app
+from homework.models.models import Item
 from homework import db
-from celery import Celery
-from config import config
-
-celery = Celery(__name__)
-celery.conf.broker_url = config.CELERY_BROKER_URL
-celery.conf.result_backend = config.CELERY_RESULT_BACKEND
+from celery import shared_task
+from celery.contrib.abortable import AbortableTask
+from time import sleep
 
 
-@celery.task(name="create_item_task")
-def create_item_task(name, content):
-    item = Item(name=name, content=content)
-    db.session.add(item)
-    db.session.commit()
-    return {'status': 'Item created'}
-
-
-
-
-
-
-
+@shared_task(bind=True, base=AbortableTask)
+def create_item_task(self, name, content):
+    with current_app.app_context():
+        item = Item(name=name, content=content)
+        db.session.add(item)
+        db.session.commit()
+        for i in range(10):
+            print(i)
+            sleep(1)
+            if self.is_aborted():
+                return 'TASK STOPPED!'
+        return {'status': 'Item created'}
 
 
