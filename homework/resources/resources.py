@@ -35,7 +35,7 @@ class UpdateAPI(Resource):
         print(ns.payload)
         item = Item.query.get(ns.payload['id'])
         item.name = ns.payload['name']
-        item.content = ns.payload['content']
+        item.content = ns.payload['content'].encode()
         db.session.commit()
         return item
 
