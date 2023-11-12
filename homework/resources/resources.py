@@ -15,7 +15,7 @@ class CreateAPI(Resource):
     @ns.marshal_with(read_model)
     def post(self):
         print(ns.payload)
-        item = Item(name=ns.payload['name'], content=ns.payload['content'], created=datetime.now())
+        item = Item(name=ns.payload['name'], content=ns.payload['content'].encode(), created=datetime.now())
         db.session.add(item)
         db.session.commit()
         return item, 201

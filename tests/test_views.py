@@ -1,38 +1,29 @@
 import pytest
 from homework.models.models import Item
-from homework import db
-from datetime import datetime
+import responses
 import logging
 
 
-def test_create_item(init_database):
-    """Test item creation."""
-    item1 = Item(name='Test 10', content='content1101010101010101011111111', created=datetime.now())
-    db.session.add(item1)
-    db.session.commit()
-    assert item1.id is not None
+def test_create_item(client, app):
+    client.post("/create", data={"name": "pytest_name", "content": b"pytest contents"})
+    with app.app_context():
+        assert Item.query.count() == 1
+        assert Item.query.first().name == "pytest_name"
 
 
-def test_read_item(init_database):
-    """Test item reading."""
-    item = Item.query.first()
-    assert item is not None
+def test_read_item(client):
+    response = client.get("/read/1")
+    assert "pytest_name" in response.data
 
 
-def test_update_item(init_database):
-    """Test item updating."""
-    item = Item.query.first()
-    item.name = 'Updated Name'
-    db.session.commit()
-    updated_item = Item.query.first()
-    assert updated_item.name == 'Updated Name'
+def test_update_item(client):
+    response = client.put("/update", data={"name": "pytest_update", "content": b"pytest contents"})
+    assert "pytest_update" in response.data
 
-def test_delete_item(init_database):
-    """Test item deletion."""
-    item = Item.query.first()
-    logging.debug(item)
-    db.session.delete(item)
-    db.session.commit()
-    deleted_item = Item.query.first()
-    logging.debug(deleted_item)
-    assert deleted_item is not item
+
+def test_delete_item(client):
+    response = client.get("/read/1")
+    id = response.get_json().get('id')
+    response2 = client.delete("/delete/"+id)
+
+    assert "Item deleted" in response2.data
