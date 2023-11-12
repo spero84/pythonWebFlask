@@ -48,4 +48,4 @@ class UpdateAPI(Resource):
         item = Item.query.get(id)
         db.session.delete(item)
         db.session.commit()
-        return {}, 204
+        return {"id": item.id}, 204

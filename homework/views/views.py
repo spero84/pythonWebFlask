@@ -42,7 +42,9 @@ def create_item():
     db.session.add(item)
     try:
         db.session.commit()
-        return jsonify({"message": "Data created", "id": item.id}), 201
+        string_data = content.decode('utf-8')
+        return jsonify({"message": "Data created", "id": item.id, "content": string_data,
+                        "created": item.created}), 201
     except Exception as e:
         db.session.rollback()
         current_app.logger.info(str(e))
@@ -76,14 +78,8 @@ def read_item(id):
     string_data = byte_data.decode('utf-8')
     # if byte_data:
     #     byte_data =base64.b64encode(byte_data).decode('utf-8')
-    return jsonify({"name": item.name, "content": string_data})
-
-
-
-@bp.route('/read/<int:id>/download', methods=['GET'])
-def download_item(id):
-    item = Item.query.get_or_404(id)
-    return send_file(io.BytesIO(item.data), attachment_filename='download.bin')
+    return jsonify({"id": item.id, "name": item.name,
+                    "content": string_data, "created": item.created})
 
 
 # @bp.route('/read/<int:id>', methods=['GET'])
@@ -101,7 +97,9 @@ def update_item(id):
     item.content = file.read() if file else None
     try:
         db.session.commit()
-        return jsonify({"message": "Item updated", "id": item.id}), 200
+        string_data = item.content.decode('utf-8')
+        return jsonify({"message": "Data created", "id": item.id, "content": string_data,
+                        "created": item.created}), 201
     except Exception as e:
         db.session.rollback()
         return jsonify({'error': str(e)}), 500
