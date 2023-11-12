@@ -1,14 +1,13 @@
 import pytest
-from homework import create_app, db
+from homework import create_app
+from homework.extensions import db
 from homework.models.models import Item
 from datetime import datetime
 
+
 @pytest.fixture(scope='module')
 def app():
-    app = create_app('test')
-    # config test
-    app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///:memory:'
-    app.config['TESTING'] = True
+    app, celery = create_app('test')
 
     with app.app_context():
         db.create_all()
@@ -18,7 +17,7 @@ def app():
 
 @pytest.fixture(scope='module')
 def client(app):
-    return app.test_client('test')
+    return app.test_client()
 
 @pytest.fixture(scope='module')
 def init_database(app):

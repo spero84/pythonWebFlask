@@ -4,11 +4,6 @@ from homework import db
 from datetime import datetime
 import logging
 
-def test_home_page(client):
-    response = client.get('/')
-    assert response.status_code == 200
-    assert response.data == b'Hello World!'
-
 
 def test_create_item(init_database):
     """Test item creation."""

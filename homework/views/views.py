@@ -1,25 +1,24 @@
-from flask import current_app, Blueprint, request, jsonify, redirect, url_for
+from flask import current_app, Blueprint, request, jsonify, send_file
 from homework.models.models import Item
 from homework import db
 from datetime import datetime
 from homework import cache
-from celery.result import AsyncResult
-from homework.tasks.tasks import create_item_task
+import base64
+import json
+import io
+
 
 bp = Blueprint('main', __name__, url_prefix='/')
 
 
-# @bp.route('/')
-# def default_page():
-#     return 'Hello World!'
 
 # @bp.route('/create', methods=['POST'])
 # def create_item():
-#     req = request.get_json()
-#     current_app.logger.info(req.get('name'))
-#     current_app.logger.info(req.get('content'))
-#     task = create_item_task.delay(req.get('name'), req.get('content'))
-#     return jsonify({'task_id': task.id}), 202
+#     name = request.form['name']
+#     file = request.files['content']
+#     content = file.read() if file else None
+#     task = create_item_task.delay(name=name, content=content)
+#     return jsonify({'message': 'Task created', 'task_id': task.id}), 202
 #
 #
 # @bp.route('/create/<task_id>', methods=['GET'])
@@ -35,41 +34,92 @@ bp = Blueprint('main', __name__, url_prefix='/')
 
 @bp.route('/create', methods=['POST'])
 def create_item():
-    req = request.get_json()
-    content = req.get('content')
-    current_app.logger.info(req.get('name'))
-    current_app.logger.info(req.get('content'))
-    item = Item(created=datetime.now(), name=req.get('name'), content=req.get('content'))
+    name = request.form['name']
+    file = request.files['content']
+    content = file.read() if file else None
+    current_app.logger.debug(content)
+    item = Item(created=datetime.now(), name=name, content=content)
     db.session.add(item)
     try:
         db.session.commit()
-        return jsonify(item.serialize()), 201
+        return jsonify({"message": "Data created", "id": item.id}), 201
     except Exception as e:
         db.session.rollback()
         current_app.logger.info(str(e))
         return jsonify({'error': str(e)}), 500
 
 
+
+# @bp.route('/create', methods=['POST'])
+# def create_item():
+#     req = request.get_json()
+#     content = req.get('content')
+#     current_app.logger.info(req.get('name'))
+#     current_app.logger.info(req.get('content'))
+#     item = Item(created=datetime.now(), name=req.get('name'), content=req.get('content'))
+#     db.session.add(item)
+#     try:
+#         db.session.commit()
+#         return jsonify(item.serialize()), 201
+#     except Exception as e:
+#         db.session.rollback()
+#         current_app.logger.info(str(e))
+#         return jsonify({'error': str(e)}), 500
+
+
 @bp.route('/read/<int:id>', methods=['GET'])
 @cache.cached(timeout=120)
 def read_item(id):
     item = Item.query.get_or_404(id)
-    return item.serialize()
+    byte_data = item.content
+    current_app.logger.debug(byte_data)
+    string_data = byte_data.decode('utf-8')
+    # if byte_data:
+    #     byte_data =base64.b64encode(byte_data).decode('utf-8')
+    return jsonify({"name": item.name, "content": string_data})
+
+
+
+@bp.route('/read/<int:id>/download', methods=['GET'])
+def download_item(id):
+    item = Item.query.get_or_404(id)
+    return send_file(io.BytesIO(item.data), attachment_filename='download.bin')
+
+
+# @bp.route('/read/<int:id>', methods=['GET'])
+# @cache.cached(timeout=120)
+# def read_item(id):
+#     item = Item.query.get_or_404(id)
+#     return item.serialize()
 
 
 @bp.route('/update/<int:id>', methods=['PUT'])
 def update_item(id):
     item = Item.query.get_or_404(id)
-    req = request.get_json()
-    item.name = req.get('name')
-    item.content = req.get('content')
+    item.name = request.form['name']
+    file = request.files['content']
+    item.content = file.read() if file else None
     try:
         db.session.commit()
-        return jsonify(item.serialize()), 201
+        return jsonify({"message": "Item updated", "id": item.id}), 200
     except Exception as e:
         db.session.rollback()
         return jsonify({'error': str(e)}), 500
 
+
+# @bp.route('/update/<int:id>', methods=['PUT'])
+# def update_item(id):
+#     item = Item.query.get_or_404(id)
+#     req = request.get_json()
+#     item.name = req.get('name')
+#     item.content = req.get('content')
+#     try:
+#         db.session.commit()
+#         return jsonify(item.serialize()), 201
+#     except Exception as e:
+#         db.session.rollback()
+#         return jsonify({'error': str(e)}), 500
+#
 
 @bp.route('/delete/<int:id>', methods=['DELETE'])
 def delete_item(id):
@@ -77,7 +127,7 @@ def delete_item(id):
     db.session.delete(item)
     try:
         db.session.commit()
-        return jsonify(), 204
+        return jsonify({"message": "Item deleted", "id": id}), 204
     except Exception as e:
         db.session.rollback()
         return jsonify({'error': str(e)}), 500
