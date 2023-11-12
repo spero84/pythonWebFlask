@@ -16,5 +16,9 @@ COPY . .
 
 # 필요한 각 환경 변수를 설정
 ENV FLASK_APP=app.py
+ENV CONFIG=docker
+ENV FLASK_DEBUG=true
+
+RUN echo $FLASK_APP
 
 # CMD ["flask", "run", "-h", "0.0.0.0"]

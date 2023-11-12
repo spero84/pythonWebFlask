@@ -53,7 +53,7 @@ def create_app(config_key):
     app.register_blueprint(views.bp)
 
     # redirect error page / 아래는 주석 풀것!! TODO
-    # app.register_error_handler(404, page_not_found)
+    app.register_error_handler(404, page_not_found)
 
     celery = make_celery(app)
     celery.set_default()
