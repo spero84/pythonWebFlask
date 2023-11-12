@@ -61,10 +61,8 @@ def read_item(id):
 def update_item(id):
     item = Item.query.get_or_404(id)
     req = request.get_json()
-    content = req.get('content')
-    item.modify_created = datetime.now()
-    item.modify_name = req.get('name')
-    item.modify_content = req.get('content')
+    item.name = req.get('name')
+    item.content = req.get('content')
     try:
         db.session.commit()
         return jsonify(item.serialize()), 201
@@ -74,7 +72,7 @@ def update_item(id):
 
 
 @bp.route('/delete/<int:id>', methods=['DELETE'])
-def delete_item():
+def delete_item(id):
     item = Item.query.get_or_404(id)
     db.session.delete(item)
     try:
